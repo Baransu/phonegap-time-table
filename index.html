@@ -26,9 +26,11 @@
     <link rel="stylesheet" type="text.css" href="css/impExpPage.css">    
     <link rel="stylesheet" type="text.css" href="css/otherPage.css">
 
-    <link rel="stylesheet" type="text.css" href="css/fileManagerPage.css">    
+    <link rel="stylesheet" type="text.css" href="css/fileManagerPage.css">  
+    
+    <link rel="stylesheet" type="text.css" href="css/updateLessonPage.css">  
 
-    <title>PlanL</title>
+    <title>PlanLekcji</title>
 </head>
 <body>
 
@@ -240,7 +242,7 @@
     <div id="fileManagerPage">
         <!-- HEADER -->
         <div id="headerFileManager" class="header">
-            <div id="backFileManager" class="backButton">
+            <div id="backFileManagerPage" class="backButton">
                 <img class="headerIcon" src="img/arrow_left_light.png" />
             </div>
             <div class="headerText">file manager</div>
@@ -251,6 +253,46 @@
         <!-- MAIN CONTENT-->
         <div id="mainContentFileManagerPage" class="mainContent"></div>
     </div> 
+
+    <!-- UPDATE DAY PAGE -->
+    <div id="updateLessonPage">
+        <!-- HEADER -->
+        <div id="headerUpdateLesson" class="header">
+            <div class="headerText headerTextUpdateLesson">update day</div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentUpdateLessonPage" class="mainContent">
+            <div id="updateLessonOptions">
+                <div class="select">
+					<select id="selectPrzedmioty">
+						<option disabled selected style="display: none;"></option>
+						<option value="1">Antropologia hobbitow</option>
+						<option value="2">Filozofia Jedi</option>
+						<option value="3">Religie Mordoru</option>
+					</select>
+				</div>
+				<div class="select">
+					<select id="selectNauczyciele">
+						<option disabled selected style="display: none;"></option>
+						<option value="1">Abdullah 2</option>
+						<option value="2">Obi-Wan Kenobi</option>
+						<option value="3">Frodo Baggins</option>
+
+					</select>
+				</div>
+				<div class="select">
+					<input type="text" maxlength="10" id="sala" />
+				</div>
+            </div>
+
+            <div id="updatePageSelectButtons">
+                <div id="updatePageSelectButtonsConfirm" class="updatePageSelectButton"></div>
+                <div id="updatePageSelectButtonsDecline" class="updatePageSelectButton"></div>
+            </div>
+        </div>
+        <!-- BOTTOM BUTTONS-->
+        
+    </div>
 
     <script type="text/javascript" src="cordova.js"></script>
 

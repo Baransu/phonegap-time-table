@@ -1,3 +1,18 @@
+//==============================================TO DO===================================//
+//edycja godzin
+//dodanie/usuniecie przedmiotow
+//dodanie/usuniecie nauczycieli
+//file manager
+//backup lokalny
+//import z pliku
+//backup na serwer
+//import z serwera
+//kolorystyka
+//wyswietlenie nastepnej lekcji na stronie startowej
+//usuniecie lekcji (ustawienie na domyslne wyzerowane wartosci)
+//wyswietlnie szczegolow lekcji po nacisniecu danej lekcji
+//==============================================TO DO===================================//
+
 //==============================================ZMIENNE===================================//
 var baseWidth;
 var baseHeight;
@@ -5,50 +20,79 @@ var fontSize;
 var db;
 var tempHour;
 var tempMinutes;
-var slow = ".25s";
-var miesiace = ["Styczeñ", "Luty", "Marzec", "Kwiecien", "Maj", "Czerwiec", "Lipiec", "August", "Wrzesien", "Pazdziernik", "Listopad", "Grudzein"];
-var settingsColorsMainPage = ["#8e44ad", "#27ae60", "#c0392b"];
-var defaultImg = "img/newyork.jpg";
 var ls = localStorage;
 
-var panelDzien = [];
-var przedmioty = [];
-var nauczyciele = [];
-var godziny = [];
-var numerSali = [];
+//kolory przycisku ustawien na stronie startowej
+var settingsColorsMainPage = ["#8e44ad", "#27ae60", "#c0392b"];
 
-var localDni = [
+//domyslny obrazek w tle na stronie startowej
+var defaultImg = "img/newyork.jpg";
+
+//miesiace do wyswietlania na stronie startowej
+var miesiace = [
+    "Styczeñ",
+    "Luty",
+    "Marzec",
+    "Kwiecien",
+    "Maj",
+    "Czerwiec",
+    "Lipiec",
+    "August",
+    "Wrzesien",
+    "Pazdziernik",
+    "Listopad",
+    "Grudzein"
+];
+
+//dni do wyswietlania na stronie startowej
+var infoDni = [
+    { krotka: "N", dluga: "Niedziela" },
     { krotka: "PON", dluga: "Poniedzialek" },
     { krotka: "WT", dluga: "Wtorek" },
     { krotka: "SR", dluga: "Sroda" },
     { krotka: "CZW", dluga: "Czwartek" },
     { krotka: "PT", dluga: "Piatek" },
-    { krotka: "SB", dluga: "Sobota" },
-    { krotka: "N", dluga: "Niedziela" },
+    { krotka: "SB", dluga: "Sobota" },    
 ];
 
+//dni do wgrania do bazy danych przy tworzeniu jej pierwszy raz
+var localDni = [
+    { krotka: "PON", dluga: "poniedzialek" },
+    { krotka: "WT", dluga: "wtorek" },
+    { krotka: "SR", dluga: "sroda" },
+    { krotka: "CZW", dluga: "czwartek" },
+    { krotka: "PT", dluga: "piatek" },
+    { krotka: "SB", dluga: "sobota" },
+    { krotka: "N", dluga: "niedziela" },
+];
+
+//nauczyciele do wgrania przy tworzeniu bazy danych
 var resetNauczyciele = [
     { imie: "Walter", nazwisko: "White" },
     { imie: "Tomy Lee", nazwisko: "Jones" },
     { imie: "Harison", nazwisko: "Ford" },
 ];
 
+//przedmioty do wgrania przy tworzeniu bazy danych
 var resetPrzedmioty = [
     { krotka: "MAT", dluga: "Matematyka" },
     { krotka: "POL", dluga: "Jezyk polski" },
     { krotka: "ANG", dluga: "Jezyk angielski" },
 ];
 
-var d = new Date();
-
-var rekordyWczytane = false;
+//aktualny dzien
+var curDay;
+//aktualna godzina do edycji
+var curHour;
+//==============================================ZMIENNE===================================//
 
 $(document).ready(function () {
 
     document.addEventListener("deviceready", function () {
-        //otwieramy tabele
+        //wczytanie bazy danych
         db = window.openDatabase("planNazwiskoKlasa", "1.0", "nazwa_wyswietlana", 1024 * 1024);
-        //db = window.openDatabase("name", "version", "displayname", "size");
+
+        //wypisanie wersji bazy danych
         setTimeout(function () {
             alert("ver" + db.version);
         }, 0);
@@ -74,27 +118,26 @@ $(document).ready(function () {
             tx.executeSql("DROP TABLE nauczyciele");
         }
         */
-        // tworzenie tabeli
+
+        //stworzenie potrzebnych tabeli
         db.transaction(utworz_tabele, onError, onSuccess);
 
-        //dodanie rekordow to tabeli
+        //zapelnienie tabeli podstawowymi danymi
         db.transaction(dodaj_rekord, onError, onSuccess);
-
-        //pobierz rekordy
-        //db.transaction(pobierzRekordy, onError);
 
     }, false);
 
-    //Wielkosc aplikacji
-    resize();
+    //dopasowywanie css do wielkosci ekranu
+    stylo();
 
-    //==========================================LOADING STUFF START=========================================//
+    //==========================================ZARZADZANIE PANELEM STARTOWYM=========================================//
+    //wczytanie zdjecia z localStorage
     if (ls.mainPageImg != null)
         $("#mainPageImg").attr("src", ls.mainPageImg);
-    //==========================================LOADING STUFF END=========================================//
 
+    //ustawienie zagarka
     setInterval(function () {        
-
+        var d = new Date();
         if (d.getHours() < 10)
             tempHour = "0" + d.getHours();
         else
@@ -105,77 +148,44 @@ $(document).ready(function () {
         else
             tempMinutes = d.getMinutes();
 
-        $("#dateDay").html(localDni[d.getDay() - 1].dluga);
+        $("#dateDay").html(infoDni[d.getDay()].dluga);
         $("#date").html(d.getDate() + " " + miesiace[d.getMonth()] + " " + d.getFullYear());
         $("#clock").html(tempHour.toString() + ":" + tempMinutes.toString());
+
+        if (d.getDay() <= 5 && d.getDay() >= 1)
+            curDay = d.getDay;
+        else
+            curDay = 5;
 
     }, 100);
 
     
-    //kolor zegarka
-    var abc = 0;
+    //kolor przycisku odpowiedzialnego za strone z ustawieniami
+    var kolor = 0;
     setInterval(function () {
 
-        $("#settingButtonMainPage").css({ "background-color": settingsColorsMainPage[abc], "transform": "background-color", "transition-duration": "1s" });
-        abc++;
-        if (abc > 2) abc = 0;       
+        $("#settingButtonMainPage").css({ "background-color": settingsColorsMainPage[kolor], "transform": "background-color", "transition-duration": "1s" });
+        kolor++;
+        if (kolor > 2) abc = 0;
 
     }, 60000);
+    //==========================================ZARZADZANIE PANELEM STARTOWYM=========================================//
+
     
-    //==========================================POBIERANIE DNI START=========================================//
-    function panelDzien(tx) {
-        //if (d.getDate() - 1 > 4)
-        //    var a = 0;
-        //else
-        //    var a = d.getDate() - 1;
-
-        tx.executeSql("SELECT przedmioty.nazwaKrotkaPrzedmiotu, przedmioty.nazwaDlugaPrzedmiotu, dni.nazwaDlugaDnia, glowna.numerSali FROM glowna LEFT JOIN przedmioty ON (glowna.kluczObcyPrzedmiotu = przedmioty.idPrzedmiotu) LEFT JOIN dni ON (glowna.kluczObcyDnia = dni.idDnia)WHERE glowna.kluczObcyDnia = 1", [], onSuccessPobierzDzien, onError);
-
-        function onSuccessPobierzDzien(tx, results) {
-
-            var inner = "";
-            inner = "";
-            for (var a = 0; a < results.rows.length; a++) {
-                inner += "<tr class='row'><td class='item1'>" + (a) + "</td><td class='item2'>" + (results.rows.item(a).nazwaKrotkaPrzedmiotu) + " / " + (results.rows.item(a).numerSali) + "</td></tr>";
-            }
-
-            //var dayTable = $("#dayTable");
-            /*
-            for (var a = 0; a < 15; a++) {
-                var cos = panelDzien[a].nazwaKrotkaPrzedmiotu;
-                //inner += cos;
-                inner += "<tr class='row'><td class='item1'>" + a + "</td><td class='item2'>" + cos + "</td></tr>"
-                //inner += "<tr class='row'><td class='item1'>" + a + "</td><td class='item2'>NIC</td></tr>"
-                //alert(cos)
-            }
-            */
-            $("#dayTable").html(inner);
-            $("#dayHeaderText").html(results.rows.item(0).nazwaDlugaDnia)
-            alert(results.rows.length)
-        };
-        //alert(panelDzien[0])
-        //tx.executeSql("SELECT numerSali FROM glowna WHERE glowna.kluczObcyDnia = 1", [], function () {
-           //for (var b = 0; b < 15; b++)
-             //   numerSali[b] = result.rows.item(b);
-        //}, onError);
-
-    }
-    //==========================================POBIERANIE DNI START=========================================//    
-    
+    //funkcja do testowanie wygladu panelu dzien bez dostepu do bazy danych
     function refreshDay() {
-
         var dayTable = $("#dayTable");
         var inner = "";
         for (var a = 0; a < 14; a++) {
             //var cos = panelDzien[a].nazwaKrotkaPrzedmiotu;
             //inner += cos;
             //inner += "<tr class='row'><td class='item1'>" + a + "</td><td class='item2'>" + cos + "</td></tr>"
-            inner += "<tr class='row'><td class='item1'>" + a + "</td><td class='item2'>NIC / s.</td></tr>"
+            inner += "<tr class='row'><td class='dayItemId'>" + (a+1) + "</td><td id='dayItem_"+((a+1) * 1)+"' class='dayItemContent'>NIC / s.</td></tr>"
+
+            $("#dayItem_" + (a + 1) + "").attr({ "day": 1, "id": (a + 1) });
             //alert(cos)
         }
-        dayTable.html(inner);
-
-        
+        dayTable.html(inner);        
     }
 
     /*
@@ -191,29 +201,35 @@ $(document).ready(function () {
     
     weekTable.html(innerHTML);
     */
-    var mainPage = $("#mainPage");
 
-    //==========================================SETTINGS START=========================================//
+    /*############################################################################################
+                    ZARZ¥DZANIE WYSUWANYMI PANELAMI... WYSUNIECIE/SCHOWANIE/SWIPELEFT
+    ##############################################################################################*/
+
+    //==========================================SETTINGS=========================================//
+    //wysuniecie strony
     var settingsPage = $("#settingsPage");
     $("#settingButtonMainPage").tap(function () {
         settingsPage.css("transform", "translateX(0%)");
         return false;
     });
+    //schowanie strony
     $("#backSettingsPage").tap(function () {
         settingsPage.css( "transform","translateX(-100%)");
         return false;
     });
+    //schowanie strony on swipeleft
     settingsPage.on("swipeleft", function () {
         settingsPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================SETTINGS END=========================================//
+    //==========================================SETTINGS=========================================//
 
-    //==========================================DAY START=========================================//
+    //==========================================DAY=========================================//
     var dayPage = $("#dayPage");
     $("#option1MainPage").tap(function () {        
         dayPage.css("transform", "translateX(0%)");
-        db.transaction(panelDzien, onError);
+        db.transaction(pobierzDzien, onError);
         //refreshDay();
         return false;
     });
@@ -225,9 +241,9 @@ $(document).ready(function () {
         dayPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================DAY END=========================================//
+    //==========================================DAY=========================================//
 
-    //==========================================WEEK START=========================================//
+    //==========================================WEEK=========================================//
     var weekPage = $("#weekPage");
     $("#option2MainPage").tap(function () {
         weekPage.css("transform", "translateX(0%)");
@@ -241,12 +257,11 @@ $(document).ready(function () {
         weekPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================WEEK END=========================================//
+    //==========================================WEEK=========================================//
 
-    //==========================================HELP START=========================================//
+    //==========================================HELP=========================================//
     var helpPage = $("#helpPage");
     $("#option3MainPage").tap(function () {
-        //db.transaction(pobierzRekordy, onError);
         helpPage.css("transform", "translateX(0%)");
         return false;
     });
@@ -258,9 +273,9 @@ $(document).ready(function () {
         helpPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================HELP END=========================================//
+    //==========================================HELP=========================================//
 
-    //==========================================HOURS START=========================================//
+    //==========================================HOURS=========================================//
     var hoursPage = $("#hoursPage");
     $("#settingPanel1").tap(function () {
         hoursPage.css("transform", "translateX(0%)");
@@ -279,9 +294,9 @@ $(document).ready(function () {
         hoursPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================HOURS END=========================================//
+    //==========================================HOURS=========================================//
 
-    //==========================================COLOR START=========================================//
+    //==========================================COLOR=========================================//
     var colorPage = $("#colorPage");
     $("#settingPanel2").tap(function () {
         colorPage.css("transform", "translateX(0%)");
@@ -300,9 +315,9 @@ $(document).ready(function () {
         colorPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================COLOR END=========================================//
+    //==========================================COLOR=========================================//
 
-    //==========================================STARTUP START=========================================//
+    //==========================================STARTUP=========================================//
     var startupPage = $("#startupPage");
     $("#settingPanel3").tap(function () {
         startupPage.css("transform", "translateX(0%)");
@@ -321,9 +336,9 @@ $(document).ready(function () {
         startupPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================STARTUP END=========================================//
+    //==========================================STARTUP=========================================//
 
-    //==========================================CAMERA START=========================================//
+    //==========================================CAMERA=========================================//
     var cameraPage = $("#cameraPage");
     $("#settingPanel4").tap(function () {
         cameraPage.css("transform", "translateX(0%)");
@@ -342,9 +357,9 @@ $(document).ready(function () {
         cameraPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================CAMERA END=========================================//            
+    //==========================================CAMERA=========================================//            
 
-    //==========================================IMPEXP START=========================================//
+    //==========================================IMPORT/EXPORT=========================================//
     var impExpPage = $("#impExpPage");
     $("#settingPanel5").tap(function () {
         impExpPage.css("transform", "translateX(0%)");
@@ -363,9 +378,9 @@ $(document).ready(function () {
         impExpPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================IMPEXP END=========================================//
+    //==========================================IMPORT/EXPORT=========================================//
 
-    //==========================================OTHER START=========================================//
+    //==========================================OTHER=========================================//
     var otherPage = $("#otherPage");
     $("#settingPanel6").tap(function () {
         otherPage.css("transform", "translateX(0%)");
@@ -384,11 +399,11 @@ $(document).ready(function () {
         otherPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================OTHER END=========================================//
+    //==========================================OTHER=========================================//
 
-    //==========================================FILE MANAGER START=========================================//
+    //==========================================FILE MANAGER=========================================//
     var fileManager = $("#fileManagerPage");
-    $("#backFileManager").tap(function () {
+    $("#backFileManagerPage").tap(function () {
         fileManager.css("transform", "translateX(-100%)");
         return false;
     });
@@ -402,60 +417,131 @@ $(document).ready(function () {
         fileManager.css("transform", "translateX(-100%)");
         return false;
     });
-    //==========================================FILE MANAGER END=========================================//
+    //==========================================FILE MANAGER=========================================//
 
-    //==========================================FEATURES START=========================================//
+    //==========================================UPDATE LESSON=========================================//
+    var updateLessonPage = $("#updateLessonPage");
+    
+    $("#dayTable").on("taphold", "tr", function () {
+        updateLessonPage.css("transform", "translateX(0%)");
+        db.transaction(pobierzPrzedmioty, onError);
+        db.transaction(pobierzNauczycieli, onError);
+        curHour = $(this).index() + 1;
+        return false;
+    });
+    $("#backUpdateLessonPage").tap(function () {
+        updateLessonPage.css("transform", "translateX(-100%)");
+        return false;
+    });
+    $("#headerHomeUpdateLessonPage").tap(function () {
+        dayPage.css({ "transform": "translateX(-100%)" });
+        updateLessonPage.css("transform", "translateX(-100%)");
+        return false;
+    });
+    $("#updatePageSelectButtonsConfirm").tap(function () {
+        updateLessonPage.css("transform", "translateX(-100%)");
 
-    $("#resetPicture").tap(function () {        
+        db.transaction(updateLesson, onError);
+
+        function updateLesson(tx) {
+            tx.executeSql("UPDATE glowna SET numerSali = '" + $("#sala").val() + "', kluczObcyPrzedmiotu = " + parseInt($("#selectPrzedmioty").val()) + ", kluczObcyNauczyciela = " + parseInt($("#selectNauczyciele").val()) + " WHERE kluczObcyDnia = " + curDay + " AND kluczObcyGodziny = " + curHour + ";");
+        }
+        db.transaction(panelpobierzDzienDzien, onError);
+        return false;
+    });
+    $("#updatePageSelectButtonsDecline").tap(function () {
+        updateLessonPage.css("transform", "translateX(-100%)");
+        return false;
+    });
+    //==========================================UPDATE LESSON=========================================//
+
+    //==========================================USTAWIANIE ZDJECIA NA EKRANIE STARTOWYM=========================================//
+    //resetowanie zdjecia do zdjecia domyslnego
+    $("#resetPicture").tap(function () {
         $("#mainPageImg").attr("src", defaultImg);
         ls.mainPageImg = defaultImg;
         setTimeout(function () {
-            alert("Zdjecie zresetowane");
+            alert("Zdjecie zresetowane!");
         }, 0);
         return false;
-    });    
+    });
+    //ustawianie zdjecia z kamery
     $("#takePicturePhoto").tap(function () {
         var camOptions = {
             quality: 50,
             destinationType: Camera.DestinationType.FILE_URI,
-            sourceType: Camera.PictureSourceType.CAMERA // Camera.PictureSourceType.SAVEDPHOTOALBUM   
+            sourceType: Camera.PictureSourceType.CAMERA  
         };
         navigator.camera.getPicture(camSuccess, camError, camOptions);
-
-        function camSuccess(fileUri) {
-            $("#mainPageImg").attr("src", fileUri);
-            ls.mainPageImg = fileUri;
-            setTimeout(function () {
-                alert("Zdjecie zmienione");
-            }, 0);
-        };
-        function camError(error) {
-            alert(error.message)
-        };
         return false;
     });
+    //ustawianie zdjecia z galerii
     $("#takePictureGallery").tap(function () {
         var camOptions = {
             quality: 50,
             destinationType: Camera.DestinationType.FILE_URI,
-            sourceType: Camera.PictureSourceType.PHOTOLIBRARY // Camera.PictureSourceType.SAVEDPHOTOALBUM   
+            sourceType: Camera.PictureSourceType.PHOTOLIBRARY 
         };
-        navigator.camera.getPicture(camSuccess, camError, camOptions);
-
-        function camSuccess(fileUri) {
-            $("#mainPageImg").attr("src", fileUri);
-            ls.mainPageImg = fileUri;
-            setTimeout(function () {
-                alert("Zdjecie zmienione");
-            }, 0);
-        };
-        function camError(error) {
-            alert(error.message)
-        };
+        navigator.camera.getPicture(camSuccess, camError, camOptions);       
         return false;
     });
+    //udane pobranie zdjecia
+    function camSuccess(fileUri) {
+        $("#mainPageImg").attr("src", fileUri);
+        ls.mainPageImg = fileUri;
+        setTimeout(function () {
+            alert("Zdjecie zmienione!");
+        }, 0);
+    };
+    //blad przy pobieraniu zdjecia
+    function camError(error) {
+        alert("Blad kamery: " + error.message)
+    };
+    //==========================================USTAWIANIE ZDJECIA NA EKRANIE STARTOWYM=========================================//
+
+    /*############################################################################################
+                                          WSZYSTKIE FUNKCJE
+    ##############################################################################################*/
+    //==========================================FUNKCJE=========================================//    
+    //pobranie przedmiotow do edycji lekcji
+    function pobierzPrzedmioty(tx) {
+        tx.executeSql("SELECT przedmioty.idPrzedmiotu, przedmioty.nazwaDlugaPrzedmiotu FROM przedmioty WHERE przedmioty.idPrzedmiotu > 0;", [],
+        function (tx, results) {
+            var options = "";
+            for (var a = 0; a < results.rows.length; a++) {
+                options += "<option value='" + results.rows.item(a).idPrzedmiotu + "'>" + results.rows.item(a).nazwaDlugaPrzedmiotu + "</option>";
+            }
+            $("#selectPrzedmioty").html(options);
+        }, onError);
+    };
+    //pobranie nauczycieli do edycji lekcji
+    function pobierzNauczycieli(tx) {
+        tx.executeSql("SELECT nauczyciele.idNauczyciela, nauczyciele.imieNauczyciela, nauczyciele.nazwiskoNauczyciela FROM nauczyciele WHERE nauczyciele.idNauczyciela > 0;", [],
+        function (tx, results) {
+            var options = "";
+            for (var a = 0; a < results.rows.length; a++) {
+                options += "<option value='" + results.rows.item(a).idNauczyciela + "'>" + results.rows.item(a).imieNauczyciela + " " + results.rows.item(a).nazwiskoNauczyciela + "</option>";
+            }
+            $("#selectNauczyciele").html(options);
+        }, onError);
+    };
+    //pobranie lekcji na aktualny dzien
+    function pobierzDzien(tx) {
+        tx.executeSql("SELECT przedmioty.nazwaKrotkaPrzedmiotu, przedmioty.nazwaDlugaPrzedmiotu, dni.nazwaDlugaDnia, glowna.numerSali, glowna.kluczObcyDnia FROM glowna LEFT JOIN przedmioty ON (glowna.kluczObcyPrzedmiotu = przedmioty.idPrzedmiotu) LEFT JOIN dni ON (glowna.kluczObcyDnia = dni.idDnia)WHERE glowna.kluczObcyDnia = " + curDay + "", [],
+        function (tx, results) {
+            var inner = "";
+            for (var a = 0; a < results.rows.length; a++) {
+                inner += "<tr class='row'><td class='dayItemId'>" + (a + 1) + "</td><td class='dayItemContent'>" + (results.rows.item(a).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a).numerSali) + "</td></tr>";
+            }
+            $("#dayTable").html(inner);
+            $("#dayHeaderText").html(results.rows.item(0).nazwaDlugaDnia)
+        }, onError);
+    };
+
     
+
     /*
+    //file manager WIP
     $("#fileManager").tap(function () {
         
         var rootDir = null;             // katalog g³ówny, startowy
@@ -526,37 +612,9 @@ $(document).ready(function () {
     });
     
     */
-
-    //==========================================FEATURES END=========================================//
-
-
-    //$("#option2").tap(function () {
-
-    /*
-    db.transaction(pobierz_dane, onError);
-
-    function pobierz_dane(tx) {
-            
-        tx.executeSql("SELECT dni.name FROM glowna LEFT JOIN dni ON(glowna.kluczDnia = dni.idDnia)", [], onSuccess, onError)
-    };
-
-    function onSuccess(tx, results) {
-        alert(results.rows.length)
-        alert(results.rows.item(0).name)
-        //console.log(results)
-    };
-
-    function onError(error) {
-        alert("problem z czytaniem: " + error);
-    };
-    */
-
-    //})
-
-    //==========================================FUNKCJE=========================================//
-
-    function resize() {
-
+    
+    //ustawianie css w zaleznosci od wielkosc
+    function stylo() {
         baseWidth = $(window).width();
         baseHeight = $(window).height();
 
@@ -569,6 +627,7 @@ $(document).ready(function () {
         $("#clock").css("line-height", baseHeight / 5 + "px")
 
         $("#date").css("font-size", baseHeight / 25 + "px");
+
         $("#dateDay").css("font-size", baseHeight * 0.07 + "px");
         $("#dateDay").css("line-height", baseHeight / 10 + "px");
 
@@ -578,7 +637,7 @@ $(document).ready(function () {
         $(".button").css("font-size", baseHeight * 0.04 + "px");
         $(".button").css("line-height", baseHeight /4 + "px");
 
-        $("#dayTable").css("font-size", baseHeight * 0.07 + "px");
+        $("#dayTable").css("font-size", baseHeight * 0.06 + "px");
 
         $(".panels").css("font-size", baseHeight * 0.05 + "px");
         $(".panelsText").css("line-height", baseHeight * 0.15 + "px");
@@ -588,71 +647,68 @@ $(document).ready(function () {
         $(".itemWeek").css("height", baseHeight / 10 + "px");
 
         $(".file").css("font-size", baseHeight/5 + "px");
-        //$(".file").css("line-height", baseHeight /5 + "px");
+
+        $(".updatePageSelectButton").css("width", baseWidth/2 +"px")
 
     };
+    //==========================================FUNKCJE=========================================//
+
+    //==========================================TWORZENIE I WYPELNIANIE BAZY DANYCH=========================================//
     //tworzenie tabeli
     function utworz_tabele(tx) {
-
-        //glowna
+        //tabela glowna
         tx.executeSql("CREATE TABLE IF NOT EXISTS glowna (id INTEGER PRIMARY KEY, numerSali VARCHAR(10), kluczObcyDnia INTEGER, kluczObcyGodziny INTEGER, kluczObcyPrzedmiotu INTEGER, kluczObcyNauczyciela INTEGER);");
-
-        //dni
+        //tabela dni
         tx.executeSql("CREATE TABLE IF NOT EXISTS dni (idDnia INTEGER PRIMARY KEY, nazwaKrotkaDnia VARCHAR(10), nazwaDlugaDnia VARCHAR(25));");
-
-        //godziny
+        //tabela godziny
         tx.executeSql("CREATE TABLE IF NOT EXISTS godziny (idGodziny INTEGER PRIMARY KEY, godzinaOd VARCHAR(10), minutaOd VARCHAR(10), godzinaDo VARCHAR(10), minutaDo VARCHAR(10));");
-
-        //przedmioty
+        //tabela przedmioty
         tx.executeSql("CREATE TABLE IF NOT EXISTS przedmioty (idPrzedmiotu INTEGER PRIMARY KEY, nazwaKrotkaPrzedmiotu VARCHAR(30), nazwaDlugaPrzedmiotu VARCHAR(30));");
-
-        //nauczyciele
+        //tabela nauczyciele
         tx.executeSql("CREATE TABLE IF NOT EXISTS nauczyciele (idNauczyciela INTEGER PRIMARY KEY, imieNauczyciela VARCHAR(30), nazwiskoNauczyciela VARCHAR(30));");
-
-
     };
     //dodawanie rekordow
     function dodaj_rekord(tx) {
         var mainTemp = 0;
-        //glowna
+        //tabela glowna
         for (var a = 1; a <= 5; a++) {
             for (var b = 1; b <= 14; b++) {
                 mainTemp++;
                 tx.executeSql("INSERT INTO glowna (id, numerSali, kluczObcyDnia, kluczObcyGodziny, kluczObcyPrzedmiotu, kluczObcyNauczyciela) VALUES (" + mainTemp + ", 0, " + a + ", " + b + ", 1, 1);");
             }
-        }
-                
-        //dni
+        }                
+        //tabela dni
         for (var a = 1; a <= localDni.length; a++) {
             tx.executeSql("INSERT INTO dni (idDnia, nazwaKrotkaDnia, nazwaDlugaDnia) VALUES (" + a + ", '" + localDni[a - 1].krotka + "', '" + localDni[a - 1].dluga + "');");
-        }
-
-        //godziny
-        for (var a = 1; a <= 14; a++) {
-            tx.executeSql("INSERT INTO godziny (idGodziny, godzinaOd, minutaOd, godzinaDo, minutaDo) VALUES (" + a + ", 0, 0, 0, 0);");
-        }
-
-        //przedmioty   
+        }        
+        //tabela przedmioty   
         for (var a = 1; a <= resetNauczyciele.length; a++) {
             tx.executeSql("INSERT INTO przedmioty (idPrzedmiotu, nazwaKrotkaPrzedmiotu, nazwaDlugaPrzedmiotu) VALUES (" + a + ", '" + resetPrzedmioty[a - 1].krotka + "','" + resetPrzedmioty[a - 1].dluga + "');");
         }
-
-        //nauczyciele
+        //tabela nauczyciele
         for (var a = 1; a <= resetPrzedmioty.length; a++) {
             tx.executeSql("INSERT INTO nauczyciele (idNauczyciela, imieNauczyciela, nazwiskoNauczyciela) VALUES (" + a + ", '" + resetNauczyciele[a - 1].imie + "','" + resetNauczyciele[a - 1].nazwisko + "');");
         }
+        //tabela godziny
+        for (var a = 1; a <= 14; a++) {
+            tx.executeSql("INSERT INTO godziny (idGodziny, godzinaOd, minutaOd, godzinaDo, minutaDo) VALUES (" + a + ", 0, 0, 0, 0);");
+        }
     };
+    //operacja slq przebiegla pomyslnie
     function onSuccess() {
         setTimeout(function () {
-            alert("Success");
+            alert("SQL Success");
         }, 0);
 
     };
+    //operacja sql przebiegla niepomyslnie
     function onError(tx, error) {
         setTimeout(function () {
-            alert("Error przy wstawianiu rekordu: " + error.message);
+            alert("SQL Error: " + error.message);
         }, 0);
     };
+    //==========================================TWORZENIE I WYPELNIANIE BAZY DANYCH=========================================//
+
 
     /*
     //wyczyszczenie bazy (dla bezpieczenstwa)
