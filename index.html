@@ -1,0 +1,258 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+    <script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="lib/jquery.mobile.custom.min.js"></script>
+    <script type="text/javascript" src="lib/jquery.transit.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+
+    <link rel="stylesheet" type="text.css" href="css/reset.css">
+    <link rel="stylesheet" type="text.css" href="css/style.css">
+    <link rel="stylesheet" type="text.css" href="css/imageStyles.css">
+
+    <link rel="stylesheet" type="text.css" href="css/mainPage.css">
+    <link rel="stylesheet" type="text.css" href="css/settingPage.css">
+    <link rel="stylesheet" type="text.css" href="css/dayPage.css">
+    <link rel="stylesheet" type="text.css" href="css/weekPage.css">    
+    <link rel="stylesheet" type="text.css" href="css/helpPage.css">    
+    
+    <link rel="stylesheet" type="text.css" href="css/hoursPage.css">
+    <link rel="stylesheet" type="text.css" href="css/colorPage.css">
+    <link rel="stylesheet" type="text.css" href="css/startupPage.css">
+    <link rel="stylesheet" type="text.css" href="css/cameraPage.css"> 
+    <link rel="stylesheet" type="text.css" href="css/impExpPage.css">    
+    <link rel="stylesheet" type="text.css" href="css/otherPage.css">
+
+    <link rel="stylesheet" type="text.css" href="css/fileManagerPage.css">    
+
+    <title>PlanL</title>
+</head>
+<body>
+
+    <!-- MAIN PAGE -->
+    <div id="mainPage">
+        <img src="img/newyork.jpg" id="mainPageImg" class="ig-xpro2">
+        <!-- MAIN -->
+        <div id="mainPageContent">
+            <div id="info">
+                <div id="dateDay"></div>
+                <div id="settingButtonMainPage">
+                    <img class="optionsIcon" src="img/settings_icon_light.png" />
+                </div>
+                <div id="date"></div> 
+                <div id="clock"></div>                
+            </div>            
+        </div>
+        <!-- BUTTONS -->
+        <div id="optionsButtons">
+            <div id="option1MainPage" class="mainPageButtonBottom mainButtonsText">day</div>
+            <div id="option2MainPage" class="mainPageButtonBottom mainButtonsText">week</div>
+            <div id="option3MainPage" class="mainPageButtonBottom mainButtonsText">help</div>
+        </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div id="settingsPage">
+        <!-- HEADER -->
+        <div id="headerSettings" class="header">
+            <div id="backSettingsPage" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div class="headerText">settings</div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentSettingsPage" class="mainContent">
+            <div id="settingPanel1" class="panels">
+                <div class="panelsText">hours</div>
+            </div>
+            <div id="settingPanel2" class="panels">
+                <div class="panelsText">color settings</div>
+            </div>
+            <div id="settingPanel3" class="panels">
+                <div class="panelsText">startup screen</div>
+            </div>
+            <div id="settingPanel4" class="panels">
+                <div class="panelsText">camera</div>
+            </div>
+            <div id="settingPanel5" class="panels">
+                <div class="panelsText">import/export</div>
+            </div>
+            <div id="settingPanel6" class="panels">
+                <div class="panelsText">other</div>
+            </div>
+        </div>
+    </div>  
+
+    <!-- DAY PAGE -->
+    <div id="dayPage">
+        <!-- HEADER -->
+        <div id="headerDay" class="header">
+            <div id="backDayPage" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div id="dayHeaderText" class="headerText">day</div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentDayPage">
+            <div id="dayEntries" class="entries">
+                <table id="dayTable"></table> 
+            </div>          
+        </div>
+    </div> 
+    
+    <!-- WEEK PAGE -->
+    <div id="weekPage">
+        <!-- HEADER -->
+        <div id="headerWeek" class="header">
+            <div id="backWeekPage" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div class="headerText">week</div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentWeekPage">
+            <div id="weekEntries" class="entries">
+                <table id="weekTable"></table> 
+            </div>                                   
+        </div>
+    </div>     
+
+    <!-- HELP PAGE -->
+    <div id="helpPage">
+        <!-- HEADER -->
+        <div id="headerHelp" class="header">
+            <div id="backHelpPage" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div class="headerText">help</div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentHelpPage" class="mainContent"></div>
+    </div>
+
+     <!-- HOURS SETTING OPTIONS PAGE -->
+    <div id="hoursPage">
+        <!-- HEADER -->
+        <div id="headerHours" class="header">
+            <div id="backHoursPage" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div class="headerText">hours</div>
+            <div id="headerHomeHoursPage"class="homeButton">
+                <img class="headerIcon" src="img/home_light.png" />
+            </div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentHoursPage" class="mainContent"></div>
+    </div> 
+    
+    <!-- COLOR OPTIONS PAGE -->
+    <div id="colorPage">
+        <!-- HEADER -->
+        <div id="headerColor" class="header">
+            <div id="backColorPage" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div class="headerText">color</div>
+            <div id="headerHomeColorPage"class="homeButton">
+                <img class="headerIcon" src="img/home_light.png" />
+            </div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentColorPage" class="mainContent"></div>
+    </div>
+    
+   <!-- STARTUP OPTIONS PAGE -->
+    <div id="startupPage">
+        <!-- HEADER -->
+        <div id="headerStartup" class="header">
+            <div id="backStartupPage" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div class="headerText">startup screen</div>
+            <div id="headerHomeStartupPage"class="homeButton">
+                <img class="headerIcon" src="img/home_light.png" />
+            </div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentStartupPage" class="mainContent">
+             <div id="resetPicture" class="button">reset picture</div>
+        </div>
+    </div>
+    
+    <!-- CAMERA OPTIONS PAGE -->
+    <div id="cameraPage">
+        <!-- HEADER -->
+        <div id="headerCamera" class="header">
+            <div id="backCameraPage" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div class="headerText">camera</div>
+            <div id="headerHomeCameraPage"class="homeButton">
+                <img class="headerIcon" src="img/home_light.png" />
+            </div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentCameraPage" class="mainContent">
+            <div id="takePicturePhoto" class="button">cam picture</div>
+            <div id="takePictureGallery" class="button">gallery picture</div>
+        </div>
+    </div> 
+    
+    <!-- IMPORT/EXSPORT OPTIONS PAGE -->
+    <div id="impExpPage">
+        <!-- HEADER -->
+        <div id="headerImpExp" class="header">
+            <div id="backImpExpPage" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div class="headerText">import/export</div>
+            <div id="headerHomeImpExpPage"class="homeButton">
+                <img class="headerIcon" src="img/home_light.png" />
+            </div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentImpExpPage" class="mainContent">
+            <div id="fileManager" class="button">file manager</div>
+        </div>
+    </div>
+    
+    <!-- OTHER OPTIONS PAGE -->
+    <div id="otherPage">
+        <!-- HEADER -->
+        <div id="headerOther" class="header">
+            <div id="backOtherPage" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div class="headerText">other</div>
+            <div id="headerHomeOtherPage"class="homeButton">
+                <img class="headerIcon" src="img/home_light.png" />
+            </div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentOtherPage" class="mainContent"></div>
+    </div>  
+    
+    <!-- FILE MANAGER PAGE -->
+    <div id="fileManagerPage">
+        <!-- HEADER -->
+        <div id="headerFileManager" class="header">
+            <div id="backFileManager" class="backButton">
+                <img class="headerIcon" src="img/arrow_left_light.png" />
+            </div>
+            <div class="headerText">file manager</div>
+            <div id="headerHomeFileManagerPage"class="homeButton">
+                <img class="headerIcon" src="img/home_light.png" />
+            </div>
+        </div>
+        <!-- MAIN CONTENT-->
+        <div id="mainContentFileManagerPage" class="mainContent"></div>
+    </div> 
+
+    <script type="text/javascript" src="cordova.js"></script>
+
+</body>
+</html>

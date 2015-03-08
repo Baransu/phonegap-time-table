@@ -1,0 +1,82 @@
+#mainPage {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    /*background-color: #2c3e50;*/ 
+    overflow: hidden;
+}
+#mainPageImg {
+    position: absolute;
+    text-align: center;
+    height: 100%;
+    width: auto;
+    margin: auto;
+    top: -9999px;
+    bottom: -9999px;
+    left: -9999px;
+    right: -9999px;
+}
+#mainPageContent {
+    height: 90%;
+}
+#optionsButtons { 
+    width: 100%;
+    height: 10%;
+    text-align: center;
+}
+#info {
+    height: 100%;
+    color: white;
+    position: fixed;
+}
+#clock {
+    height: 20%;
+    width: 100%;
+    float: left;
+    text-align: center;
+}
+#dateDay {
+    float: left;
+    height: 10%;
+    width: 65%;
+    padding-left: 5%;
+}
+#settingButtonMainPage {    
+    background-color: #c0392b;
+    float: right;
+    width: 20%;
+    height: 10%;
+    margin-right: 5%;
+    text-align: center;
+}
+#date {
+    float: left;
+    height: 10%;
+    width: 65%;
+    padding-left: 5%; 
+}
+.mainPageButtonBottom {
+    float: left;
+    height: 100%;
+    text-align: center;
+    position: relative;    
+}
+/*DAY*/
+#option1MainPage {    
+    background-color: #8e44ad;    
+}
+/*WEEK*/
+#option2MainPage {
+    background-color: #27ae60;    
+}
+/*HELP*/
+#option3MainPage {
+    background-color: #c0392b;
+}
+.optionsIcon {
+    height: 100%;
+    width: auto;
+}
+.mainButtonsText {
+    color: white;
+}

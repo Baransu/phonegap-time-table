@@ -1,0 +1,22 @@
+#fileManagerPage {
+    width: 100%;
+    height: 100%;    
+    position: fixed;
+    background-color: #2c3e50;
+    -webkit-transform: translateX(-100%);
+    -webkit-transition: all 500ms;
+    transform: translateX(-100%);
+    transition: all 500ms;  
+}
+#headerFileManager {
+    background-color: #27ae60;
+}
+#mainContentFileManagerPage {
+}
+.file {
+    width: 100%;
+    height: 10%;
+    color: white;
+    background-color: teal;
+    text-align: center;
+}
