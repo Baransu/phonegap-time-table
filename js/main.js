@@ -1,16 +1,16 @@
 //==============================================TO DO===================================//
-//edycja godzin
 //dodanie/usuniecie przedmiotow
 //dodanie/usuniecie nauczycieli
+//panel tydzien (dokonczenie)
 //file manager
 //backup lokalny
 //import z pliku
 //backup na serwer
 //import z serwera
-//kolorystyka
 //wyswietlenie nastepnej lekcji na stronie startowej
 //usuniecie lekcji (ustawienie na domyslne wyzerowane wartosci)
-//wyswietlnie szczegolow lekcji po nacisniecu danej lekcji
+
+//kolorystyka (opcionalnie)
 //==============================================TO DO===================================//
 
 //==============================================ZMIENNE===================================//
@@ -84,6 +84,13 @@ var resetPrzedmioty = [
 var curDay;
 //aktualna godzina do edycji
 var curHour;
+
+//index godziny ktora edytujemy
+var hourEditIndex;
+
+//czy edytujemy godzine rozpoczecia czy zakonczenia (Od rozpoczecia, Do zakonczenia)
+var hourOption = "";
+
 //==============================================ZMIENNE===================================//
 
 $(document).ready(function () {
@@ -96,28 +103,6 @@ $(document).ready(function () {
         setTimeout(function () {
             alert("ver" + db.version);
         }, 0);
-
-        /*
-        //drop table
-        db.transaction(drop_table,
-           function (tx, error) {
-               alert("Error : " + error.message);
-           },
-
-           function () {
-               setTimeout(function () {
-                   alert("drop");
-               }, 0);               
-           });
-
-        function drop_table(tx) {
-            tx.executeSql("DROP TABLE glowna");
-            tx.executeSql("DROP TABLE dni");
-            tx.executeSql("DROP TABLE godziny");
-            tx.executeSql("DROP TABLE przedmioty");
-            tx.executeSql("DROP TABLE nauczyciele");
-        }
-        */
 
         //stworzenie potrzebnych tabeli
         db.transaction(utworz_tabele, onError, onSuccess);
@@ -152,9 +137,9 @@ $(document).ready(function () {
         $("#date").html(d.getDate() + " " + miesiace[d.getMonth()] + " " + d.getFullYear());
         $("#clock").html(tempHour.toString() + ":" + tempMinutes.toString());
 
-        if (d.getDay() <= 5 && d.getDay() >= 1)
-            curDay = d.getDay;
-        else
+        if (d.getDay() <= 5)
+            curDay = d.getDay();
+        else if(d.getDay() == 0)
             curDay = 5;
 
     }, 100);
@@ -189,17 +174,7 @@ $(document).ready(function () {
     }
 
     /*
-    var weekTable = $("#weekTable");
-    var innerHTML2;
-    innerHTML2 += "<tr><td class='itemWeek'>1</td><td class='itemWeek'>2</td><td class='itemWeek'>3</td><td class='itemWeek'>4</td><td class='itemWeek'>5</td><td class='itemWeek'>6</td><td class='itemWeek'>7</td></tr>"
-    for (var a = 0; a < 15; a++) {
-        innerHTML2 += "<tr><td>" + a + "</td>"
-        innerHTML2 += "<td class='itemWeek'>d1</td><td class='itemWeek'>d2</td><td class='itemWeek'>d3</td><td class='itemWeek'>d4</td><td class='itemWeek'>d5</td><td class='itemWeek'>d6</td><td class='itemWeek'>d7</td>"
-
-        innerHTML2 += "</tr>"
-    }
-    
-    weekTable.html(innerHTML);
+   
     */
 
     /*############################################################################################
@@ -230,7 +205,6 @@ $(document).ready(function () {
     $("#option1MainPage").tap(function () {        
         dayPage.css("transform", "translateX(0%)");
         db.transaction(pobierzDzien, onError);
-        //refreshDay();
         return false;
     });
     $("#backDayPage").tap(function () {
@@ -247,6 +221,7 @@ $(document).ready(function () {
     var weekPage = $("#weekPage");
     $("#option2MainPage").tap(function () {
         weekPage.css("transform", "translateX(0%)");
+        db.transaction(pobierzTydzien, onError);
         return false;
     });
     $("#backWeekPage").tap(function () {
@@ -279,7 +254,7 @@ $(document).ready(function () {
     var hoursPage = $("#hoursPage");
     $("#settingPanel1").tap(function () {
         hoursPage.css("transform", "translateX(0%)");
-        return false;
+        db.transaction(pobierzGodziny, onError);
     });
     $("#backHoursPage").tap(function () {
         hoursPage.css("transform", "translateX(-100%)");
@@ -292,6 +267,35 @@ $(document).ready(function () {
     });
     hoursPage.on("swipeleft", function () {
         hoursPage.css("transform", "translateX(-100%)");
+        return false;
+    });
+    var updateHoursPage = $("#updateHoursPage")
+    $("#hoursTable").on("tap", ".hourBegin", function () {
+        updateHoursPage.css("transform", "translateX(0%)");
+        hourEditIndex = $(this).parent().index() + 1;
+        hourOption = "Od";
+        alert(hourEditIndex)
+        return false;
+    });
+    $("#hoursTable").on("tap", ".hourEnd", function () {
+        updateHoursPage.css("transform", "translateX(0%)");
+        hourEditIndex = $(this).parent().index() + 1;
+        hourOption = "Do";
+        alert(hourEditIndex)
+        return false;
+    });
+    $("#updatePageSelectButtonHoursConfirm").on("tap", function () {
+        updateHoursPage.css("transform", "translateX(-100%)");
+
+        db.transaction(updateHours, onError);
+        function updateHours(tx) {
+            tx.executeSql("UPDATE godziny SET godzina" + hourOption + "=" + $('#selectGodzina').val().toString() + ", minuta" + hourOption + "=" + $("#selectMinuty").val().toString() + " WHERE idGodziny='" + hourEditIndex + "';");
+        }
+        db.transaction(pobierzGodziny, onError);
+        return false;
+    });
+    $("#updatePageSelectButtonHoursDecline").on("tap", function () {
+        updateHoursPage.css("transform", "translateX(-100%)");
         return false;
     });
     //==========================================HOURS=========================================//
@@ -420,13 +424,12 @@ $(document).ready(function () {
     //==========================================FILE MANAGER=========================================//
 
     //==========================================UPDATE LESSON=========================================//
-    var updateLessonPage = $("#updateLessonPage");
-    
-    $("#dayTable").on("taphold", "tr", function () {
+    var updateLessonPage = $("#updateLessonPage");    
+    $("#dayTable").on("tap", ".dayItemContent", function () {
         updateLessonPage.css("transform", "translateX(0%)");
         db.transaction(pobierzPrzedmioty, onError);
         db.transaction(pobierzNauczycieli, onError);
-        curHour = $(this).index() + 1;
+        curHour = $(this).parent().index() + 1;
         return false;
     });
     $("#backUpdateLessonPage").tap(function () {
@@ -446,7 +449,7 @@ $(document).ready(function () {
         function updateLesson(tx) {
             tx.executeSql("UPDATE glowna SET numerSali = '" + $("#sala").val() + "', kluczObcyPrzedmiotu = " + parseInt($("#selectPrzedmioty").val()) + ", kluczObcyNauczyciela = " + parseInt($("#selectNauczyciele").val()) + " WHERE kluczObcyDnia = " + curDay + " AND kluczObcyGodziny = " + curHour + ";");
         }
-        db.transaction(panelpobierzDzienDzien, onError);
+        db.transaction(pobierzDzien, onError);
         return false;
     });
     $("#updatePageSelectButtonsDecline").tap(function () {
@@ -502,7 +505,48 @@ $(document).ready(function () {
     /*############################################################################################
                                           WSZYSTKIE FUNKCJE
     ##############################################################################################*/
-    //==========================================FUNKCJE=========================================//    
+
+    //pobranie lekcji z calego tygodnia WIP
+    function pobierzTydzien(tx) {
+        tx.executeSql("SELECT przedmioty.nazwaKrotkaPrzedmiotu, przedmioty.nazwaDlugaPrzedmiotu, glowna.numerSali FROM glowna LEFT JOIN przedmioty ON (glowna.kluczObcyPrzedmiotu = przedmioty.idPrzedmiotu)", [],
+        function (tx, results) {
+            var inner = "";               
+            for (var a = 0; a < 14; b++) {
+                    inner += "<tr><td class='weekId'>" + (a+1) + "</td>"
+                    inner += "<td class='week1 weekItem'>" + (results.rows.item(a).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a).numerSali) + "</td>"
+                    inner += "<td class='week2 weekItem'>" + (results.rows.item(a + 14).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a + 14).numerSali) + "</td>"
+                    inner += "<td class='week3 weekItem'>" + (results.rows.item(a + 28).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a + 28).numerSali) + "</td>"
+                    inner += "<td class='week4 weekItem'>" + (results.rows.item(a + 42).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a + 42).numerSali) + "</td>"
+                    inner += "<td class='week5 weekItem'>" + (results.rows.item(a + 56).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a + 56).numerSali) + "</td>"
+                    inner += "</tr>"
+            }
+            $("#weekTable").html(inner);
+        }, onError);
+    };
+    //panel godziny
+    function pobierzGodziny(tx) {
+        tx.executeSql("SELECT * FROM godziny", [],
+        function (tx, results) {
+            var inner = "";            
+            for (var a = 0; a < results.rows.length; a++) {
+                var poczatekMin = "";
+                var koniecMin = "";
+                //zadbanie o poprawne wyswietlanie minut
+                if (results.rows.item(a).minutaOd < 10) {
+                    poczatekMin = '0' + results.rows.item(a).minutaOd;
+                } else {
+                    poczatekMin = results.rows.item(a).minutaOd;
+                }
+                if (results.rows.item(a).minutaDo < 10) {
+                    koniecMin = '0' + results.rows.item(a).minutaDo;
+                } else {
+                    koniecMin = results.rows.item(n).minutaDo;
+                }
+                inner += ("<tr class='hourRow'><td class='hourIndex'>" + (results.rows.item(a).idGodziny) + "</td><td class='hourBegin'>" + results.rows.item(a).godzinaOd + ":" + poczatekMin + "</td><td class='hourEnd'>" + results.rows.item(a).godzinaDo + ":" + koniecMin + "</td></tr>");
+            }
+            $("#hoursTable").html(inner);
+        }, onError);
+    };
     //pobranie przedmiotow do edycji lekcji
     function pobierzPrzedmioty(tx) {
         tx.executeSql("SELECT przedmioty.idPrzedmiotu, przedmioty.nazwaDlugaPrzedmiotu FROM przedmioty WHERE przedmioty.idPrzedmiotu > 0;", [],
@@ -638,6 +682,9 @@ $(document).ready(function () {
         $(".button").css("line-height", baseHeight /4 + "px");
 
         $("#dayTable").css("font-size", baseHeight * 0.06 + "px");
+        $("#hoursTable").css("font-size", baseHeight * 0.06 + "px");
+
+        $(".select").css("font-size", baseHeight * 0.04 + "px");
 
         $(".panels").css("font-size", baseHeight * 0.05 + "px");
         $(".panelsText").css("line-height", baseHeight * 0.15 + "px");
@@ -648,7 +695,10 @@ $(document).ready(function () {
 
         $(".file").css("font-size", baseHeight/5 + "px");
 
-        $(".updatePageSelectButton").css("width", baseWidth/2 +"px")
+        $(".updatePageSelectButton").css("width", baseWidth / 2 + "px")
+
+        $(".updatePageSelectButton").css("font-size", baseHeight / 20 + "px");
+        $(".updatePageSelectButton").css("line-height", baseHeight / 15 + "px");
 
     };
     //==========================================FUNKCJE=========================================//
