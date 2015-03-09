@@ -1,7 +1,6 @@
 //==============================================TO DO===================================//
 //dodanie/usuniecie przedmiotow
 //dodanie/usuniecie nauczycieli
-//panel tydzien (dokonczenie)
 //file manager
 //backup lokalny
 //import z pliku
@@ -137,10 +136,7 @@ $(document).ready(function () {
         $("#date").html(d.getDate() + " " + miesiace[d.getMonth()] + " " + d.getFullYear());
         $("#clock").html(tempHour.toString() + ":" + tempMinutes.toString());
 
-        if (d.getDay() <= 5)
-            curDay = d.getDay();
-        else if(d.getDay() == 0)
-            curDay = 5;
+        
 
     }, 100);
 
@@ -153,9 +149,18 @@ $(document).ready(function () {
         kolor++;
         if (kolor > 2) abc = 0;
 
+        getCurDay();
+
     }, 60000);
     //==========================================ZARZADZANIE PANELEM STARTOWYM=========================================//
 
+    //ustawianie dzisiejszego dnia
+    function getCurDay() {
+        if (d.getDay() <= 5)
+            curDay = d.getDay();
+        else if (d.getDay() == 0)
+            curDay = 5;
+    }
     
     //funkcja do testowanie wygladu panelu dzien bez dostepu do bazy danych
     function refreshDay() {
@@ -450,10 +455,53 @@ $(document).ready(function () {
             tx.executeSql("UPDATE glowna SET numerSali = '" + $("#sala").val() + "', kluczObcyPrzedmiotu = " + parseInt($("#selectPrzedmioty").val()) + ", kluczObcyNauczyciela = " + parseInt($("#selectNauczyciele").val()) + " WHERE kluczObcyDnia = " + curDay + " AND kluczObcyGodziny = " + curHour + ";");
         }
         db.transaction(pobierzDzien, onError);
+        db.transaction(pobierzTydzien, onError);
+        getCurDay();
         return false;
     });
     $("#updatePageSelectButtonsDecline").tap(function () {
         updateLessonPage.css("transform", "translateX(-100%)");
+        return false;
+    });
+    //wlaczanie edycji lekcji w panelu tygodnia
+    $("#weekTable").on("tap", ".week1", function () {
+        updateLessonPage.css("transform", "translateX(0%)");
+        db.transaction(pobierzPrzedmioty, onError);
+        db.transaction(pobierzNauczycieli, onError);
+        curHour = $(this).parent().index();
+        curDay = 1;
+        return false;
+    });
+    $("#weekTable").on("tap", ".week2", function () {
+        updateLessonPage.css("transform", "translateX(0%)");
+        db.transaction(pobierzPrzedmioty, onError);
+        db.transaction(pobierzNauczycieli, onError);
+        curHour = $(this).parent().index();
+        curDay = 2;
+        return false;
+    });
+    $("#weekTable").on("tap", ".week3", function () {
+        updateLessonPage.css("transform", "translateX(0%)");
+        db.transaction(pobierzPrzedmioty, onError);
+        db.transaction(pobierzNauczycieli, onError);
+        curHour = $(this).parent().index();
+        curDay = 3;
+        return false;
+    });
+    $("#weekTable").on("tap", ".week4", function () {
+        updateLessonPage.css("transform", "translateX(0%)");
+        db.transaction(pobierzPrzedmioty, onError);
+        db.transaction(pobierzNauczycieli, onError);
+        curHour = $(this).parent().index();
+        curDay = 4;
+        return false;
+    });
+    $("#weekTable").on("tap", ".week5", function () {
+        updateLessonPage.css("transform", "translateX(0%)");
+        db.transaction(pobierzPrzedmioty, onError);
+        db.transaction(pobierzNauczycieli, onError);
+        curHour = $(this).parent().index();
+        curDay = 5;
         return false;
     });
     //==========================================UPDATE LESSON=========================================//
@@ -510,15 +558,26 @@ $(document).ready(function () {
     function pobierzTydzien(tx) {
         tx.executeSql("SELECT przedmioty.nazwaKrotkaPrzedmiotu, przedmioty.nazwaDlugaPrzedmiotu, glowna.numerSali FROM glowna LEFT JOIN przedmioty ON (glowna.kluczObcyPrzedmiotu = przedmioty.idPrzedmiotu)", [],
         function (tx, results) {
-            var inner = "";               
-            for (var a = 0; a < 14; b++) {
-                    inner += "<tr><td class='weekId'>" + (a+1) + "</td>"
-                    inner += "<td class='week1 weekItem'>" + (results.rows.item(a).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a).numerSali) + "</td>"
-                    inner += "<td class='week2 weekItem'>" + (results.rows.item(a + 14).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a + 14).numerSali) + "</td>"
-                    inner += "<td class='week3 weekItem'>" + (results.rows.item(a + 28).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a + 28).numerSali) + "</td>"
-                    inner += "<td class='week4 weekItem'>" + (results.rows.item(a + 42).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a + 42).numerSali) + "</td>"
-                    inner += "<td class='week5 weekItem'>" + (results.rows.item(a + 56).nazwaKrotkaPrzedmiotu) + " / s." + (results.rows.item(a + 56).numerSali) + "</td>"
+            var inner = "";
+            //info header (dzien tygodnia)
+            inner += "<tr><td class='weekId'></td>"
+            inner += "<td class='weekItemHeader'>PON</td>"
+            inner += "<td class='weekItemHeader'>WT</td>"
+            inner += "<td class='weekItemHeader'>SR</td>"
+            inner += "<td class='weekItemHeader'>CZW</td>"
+            inner += "<td class='weekItemHeader'>PT</td>"
+            inner += "</tr>"
+
+            for (var a = 0; a < 14; a++) {
+                    
+                    inner += "<tr><td class='weekId'>" + (a + 1) + "</td>"
+                    inner += "<td class='week1 weekItem'>" + (results.rows.item(a).nazwaKrotkaPrzedmiotu) + "</td>"
+                    inner += "<td class='week2 weekItem'>" + (results.rows.item(a + 14).nazwaKrotkaPrzedmiotu) + "</td>"
+                    inner += "<td class='week3 weekItem'>" + (results.rows.item(a + 28).nazwaKrotkaPrzedmiotu) + "</td>"
+                    inner += "<td class='week4 weekItem'>" + (results.rows.item(a + 42).nazwaKrotkaPrzedmiotu) + "</td>"
+                    inner += "<td class='week5 weekItem'>" + (results.rows.item(a + 56).nazwaKrotkaPrzedmiotu) + "</td>"
                     inner += "</tr>"
+
             }
             $("#weekTable").html(inner);
         }, onError);
@@ -689,9 +748,7 @@ $(document).ready(function () {
         $(".panels").css("font-size", baseHeight * 0.05 + "px");
         $(".panelsText").css("line-height", baseHeight * 0.15 + "px");
 
-        $("#weekTable").css("font-size", baseHeight * 0.07 + "px");
-
-        $(".itemWeek").css("height", baseHeight / 10 + "px");
+        $("#weekTable").css("font-size", baseHeight * 0.05 + "px");
 
         $(".file").css("font-size", baseHeight/5 + "px");
 
@@ -714,7 +771,7 @@ $(document).ready(function () {
         tx.executeSql("CREATE TABLE IF NOT EXISTS godziny (idGodziny INTEGER PRIMARY KEY, godzinaOd VARCHAR(10), minutaOd VARCHAR(10), godzinaDo VARCHAR(10), minutaDo VARCHAR(10));");
         //tabela przedmioty
         tx.executeSql("CREATE TABLE IF NOT EXISTS przedmioty (idPrzedmiotu INTEGER PRIMARY KEY, nazwaKrotkaPrzedmiotu VARCHAR(30), nazwaDlugaPrzedmiotu VARCHAR(30));");
-        //tabela nauczyciele
+        //tabela nauczycieled
         tx.executeSql("CREATE TABLE IF NOT EXISTS nauczyciele (idNauczyciela INTEGER PRIMARY KEY, imieNauczyciela VARCHAR(30), nazwiskoNauczyciela VARCHAR(30));");
     };
     //dodawanie rekordow
