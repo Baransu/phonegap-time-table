@@ -13,17 +13,6 @@
 }
 #mainContentUpdateLessonPage {
 }
-#updatePageSelectButtons {
-    width: 100%;
-    height: 15%;
-    position: relative; 
-    background-color: transparent;
-}
-.updatePageSelectButton {
-    float: left;
-    color: white;
-    text-align: center;
-}
 #updatePageSelectButtonsConfirm {
     background-color: #27ae60;
 }
@@ -31,11 +20,5 @@
     background-color: #c0392b;
 }
 #updateLessonOptions {
-    height: 85%;
-}
-.select {
-    width: 70%;
-    height: 15%;
-    float: left;
-    margin-left: 15%;
+    height: 70%;
 }

@@ -1,0 +1,39 @@
+#showTSPage {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    background-color: #2c3e50;
+    -webkit-transform: translateX(-100%);
+    -webkit-transition: all 500ms;
+    transform: translateX(-100%);
+    transition: all 500ms;   
+}
+#headerShowTS {
+    background-color: #8e44ad; 
+}
+#mainContentShowTSPage {
+}
+#showTSDiv{
+    color: white;
+    text-align: center;
+    border-spacing: 0;
+    border-collapse: collapse;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+#showTSEntries {
+    height: 90%;
+}
+.showTSItem {
+    width: 100%;
+    background-color: #2c3e50;
+    border-bottom: 1px solid white;
+    height: 10%;
+}
+#addTS {
+    width: 100%;
+    height: 10%;
+    color: white;
+    text-align: center;
+    background-color: #8e44ad;
+}
