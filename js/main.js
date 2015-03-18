@@ -115,6 +115,9 @@ var curEditDay = 1;
 //czy nasza strona TS pokazuje T czy S
 var showTS = "";
 
+//id edytowanego TS
+var showTSId;
+
 //data
 var d = new Date();
 
@@ -483,6 +486,45 @@ $(document).ready(function () {
         showTSPage.css("transform", "translateX(-100%)");
         return false;
     });
+    //var updateTSPage = $("#updateTPage");
+    $("#showTSDiv").on("tap", ".showTSItem", function () {
+        
+        showTSId = $(this).index() + 1;
+        //przedmioty
+        if (showTS == "S") {
+            $("#updateSPage").css("transform", "translateX(0%)");
+        }
+
+        if (showTS == "T") {
+            $("#updateTPage").css("transform", "translateX(0%)");
+        }
+        
+    });
+
+    $("#updateTSDecline").tap(function () {
+        updateTSPage.css("transform", "translateX(-100%)");
+        return false;
+    });
+
+
+    function editNauczyciel(tx) {
+        tx.executeSql("SELECT nauczyciele.idNauczyciela, nauczyciele.imieNauczyciela, nauczyciele.nazwiskoNauczyciela FROM nauczyciele WHERE nauczyciele.idNauczyciela = " + showTSId + ";", [],
+        function (tx, results) {
+            var inner = "";
+
+            for (var a = 0; a < results.rows.length; a++) {
+                inner += "<div id='tID_" + a + "' class='showTSItem'>" + (results.rows.item(a).imieNauczyciela) + " " + (results.rows.item(a).nazwiskoNauczyciela) + "</div>";
+
+            }
+
+            $("#showTSDiv").html(inner);
+            /*
+            for (var a = 0; a < results.rows.length; a++) {
+                $("#sID_" + a + "").attr("id", (results.rows.item(a).idNauczyciela));
+            }
+            */
+        }, onError);
+    };
 
     //pobranie przedmiotow do edycji przedmiotow
     function wczytajPrzedmioty(tx) {
@@ -490,10 +532,10 @@ $(document).ready(function () {
         function (tx, results) {
             var inner = "";
             for (var a = 0; a < results.rows.length; a++) {
-                inner += "<tr id='sID_" + a + "'><td class='showTSItem'>" + (results.rows.item(a).nazwaDlugaPrzedmiotu) + "</td></tr>";
+                inner += "<div class='showTSItem'>" + (results.rows.item(a).nazwaDlugaPrzedmiotu) + "</div>";
 
             }
-            $("#showTSTable").html(inner);
+            $("#showTSDiv").html(inner);
 
             /*
             for (var a = 0; a < results.rows.length; a++) {
@@ -503,16 +545,18 @@ $(document).ready(function () {
         }, onError);
     };
 
+    
     function styleTS() {
         var inner = "";
 
         for (var a = 0; a < 3; a++) {
-            inner += "<div id='tID_" + a + "' class='showTSItem'>Imie Nazwisko</div>";
+            inner += "<div class='showTSItem'>Imie Nazwisko</div>";
 
         }
 
         $("#showTSDiv").html(inner);
     }
+    
 
     //pobranie nauczycieli do edycji nauczycieli
     function wczytajNauczycieli(tx) {
@@ -521,11 +565,11 @@ $(document).ready(function () {
             var inner = "";
 
             for (var a = 0; a < results.rows.length; a++) {
-                inner += "<tr id='tID_" + a + "'><td class'showTSItem'>" + (results.rows.item(a).imieNauczyciela) + " " + (results.rows.item(a).nazwiskoNauczyciela) + "</td></tr>";
+                inner += "<div id='tID_" + a + "' class='showTSItem'>" + (results.rows.item(a).imieNauczyciela) + " " + (results.rows.item(a).nazwiskoNauczyciela) + "</div>";
 
             }
 
-            $("#showTSTable").html(inner);
+            $("#showTSDiv").html(inner);
             /*
             for (var a = 0; a < results.rows.length; a++) {
                 $("#sID_" + a + "").attr("id", (results.rows.item(a).idNauczyciela));
@@ -552,13 +596,6 @@ $(document).ready(function () {
         return false;
     });
     //==========================================FILE MANAGER=========================================//
-
-    //==========================================SHOW TEACHERS/SUBJECTS=========================================//
-
-
-
-
-    //==========================================SHOW TEACHERS/SUBJECTS=========================================//
 
     //==========================================UPDATE LESSON=========================================//
     var updateLessonPage = $("#updateLessonPage");    
@@ -905,7 +942,7 @@ $(document).ready(function () {
 
         $(".file").css("font-size", baseHeight/5 + "px");
 
-        $(".updatePageSelectButton").css("width", baseWidth / 2 + "px")
+        $(".updatePageSelectButton").css("width", (baseWidth / 2) - 1 + "px")
 
         $(".updatePageSelectButton").css("font-size", baseHeight / 20 + "px");
         $(".updatePageSelectButton").css("line-height", baseHeight / 15 + "px");
