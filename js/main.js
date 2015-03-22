@@ -187,6 +187,15 @@ $(document).ready(function () {
     }, 60000);
     //==========================================ZARZADZANIE PANELEM STARTOWYM=========================================//
     
+    //ustawianie dzisiejszego dnia
+    function getCurDay() {
+        if (d.getDay() <= 5)
+            curDay = d.getDay();
+        if (d.getDay() > 5)
+            curDay == 0;
+        if (d.getDay() == 0)
+            curDay = 5;
+    }
     getCurDay();
 
     setTimeout(function () {
@@ -812,7 +821,6 @@ $(document).ready(function () {
         tx.executeSql("SELECT * FROM godziny;", [],
         function (tx, results) {
             var inner = "";
-            alert(results.rows.length)
             for (var a = 0; a < results.rows.length; a++) {                
                 inner += ("<tr class='hourRow'><td class='hourIndex'>" + (results.rows.item(a).idGodziny) + "</td><td class='hourBegin'>" + results.rows.item(a).godzinaOd + ":" + (results.rows.item(a).minutaOd) + "</td><td class='hourEnd'>" + results.rows.item(a).godzinaDo + ":" + (results.rows.item(a).minutaDo) + "</td></tr>");
             }
@@ -853,14 +861,6 @@ $(document).ready(function () {
             $("#dayHeaderText").html(results.rows.item(0).nazwaDlugaDnia)
         }, onError);
     };
-
-    //ustawianie dzisiejszego dnia
-    function getCurDay() {
-        if (d.getDay() <= 5)
-            curDay = d.getDay();
-        else if (d.getDay() == 0)
-            curDay = 5;
-    }
 
     /*
     //file manager WIP
