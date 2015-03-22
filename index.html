@@ -6,7 +6,6 @@
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
     <script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="lib/jquery.mobile.custom.min.js"></script>
-    <script type="text/javascript" src="lib/jquery.transit.min.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
 
     <link rel="stylesheet" type="text.css" href="css/reset.css">
@@ -275,6 +274,7 @@
         <div id="mainContentUpdateLessonPage" class="mainContent">
             <div id="updateLessonOptions">
                 <div class="select">
+                    <div class="inputInfo">przedmiot</div>
 					<select id="selectPrzedmioty">
 						<option disabled selected style="display: none;"></option>
 						<option value="1">Antropologia hobbitow</option>
@@ -283,6 +283,7 @@
 					</select>
 				</div>
 				<div class="select">
+                    <div class="inputInfo">nauczyciel</div>
 					<select id="selectNauczyciele">
 						<option disabled selected style="display: none;"></option>
 						<option value="1">Abdullah 2</option>
@@ -292,13 +293,14 @@
 					</select>
 				</div>
 				<div class="select">
+                    <div class="inputInfo">numer sali</div>
 					<input type="text" maxlength="4" id="sala" />
 				</div>
             </div>
             <div id="updatePageDeleteLesson" class="updateDeleteButton">usuń lekcje</div>
             <div id="updatePageSelectButtons">
-                <div id="updatePageSelectButtonsConfirm" class="updatePageSelectButton">Confirm</div>
-                <div id="updatePageSelectButtonsDecline" class="updatePageSelectButton">Decline</div>
+                <div id="updatePageSelectButtonsConfirm" class="updatePageSelectButton">confirm</div>
+                <div id="updatePageSelectButtonsDecline" class="updatePageSelectButton">decline</div>
             </div>
         </div>        
     </div>
@@ -313,6 +315,7 @@
         <div id="mainContentUpdateHoursPage" class="mainContent">
             <div id="updateHoursOptions">
                 <div class="select">
+                    <div class="inputInfo">godzina</div>
 					<select id="selectGodzina">
 						<option disabled selected style="display: none;"></option>
 						<option value="6">6</option>
@@ -341,7 +344,9 @@
                         <option value="5">5</option>
 					</select>
 				</div>
+
 				<div class="select">
+                    <div class="inputInfo">minuty</div>
 					<select id="selectMinuty">
 						<option disabled selected style="display: none;"></option>
 						<option value="0">00</option>
@@ -361,8 +366,8 @@
             </div>
             <div id="updatePageDeleteHour" class="updateDeleteButton">usuń godzine</div>
             <div class="updatePageSelectButtons">
-                <div id="updatePageSelectButtonHoursConfirm" class="updatePageSelectButton">Confirm</div>
-                <div id="updatePageSelectButtonHoursDecline" class="updatePageSelectButton">Decline</div>
+                <div id="updatePageSelectButtonHoursConfirm" class="updatePageSelectButton">confirm</div>
+                <div id="updatePageSelectButtonHoursDecline" class="updatePageSelectButton">decline</div>
             </div>
         </div>        
     </div>
@@ -388,50 +393,54 @@
         </div>        
     </div>
 
-    <!-- UPDATE S PAGE -->
+    <!-- UPDATE TEACHER PAGE -->
     <div id="updateTPage">
         <!-- HEADER -->
         <div id="headerUpdateT" class="header">
-            <div class="headerText headerTextUpdate">edit T</div>
+            <div class="headerText headerTextUpdate">edit teacher</div>
         </div>
         <!-- MAIN CONTENT-->
         <div id="mainContentUpdateTPage" class="mainContent">
             <div id="updateTOptions">
                 <div class="select">
-					<input type="text" maxlength="3" id="shortName" />
+                    <div class="inputInfo">imie</div>
+					<input type="text" maxlength="15" id="firstName" />
 				</div>
 				<div class="select">
-					<input type="text" maxlength="30" id="longName" />
+                    <div class="inputInfo">nazwisko</div>
+					<input type="text" maxlength="30" id="secondName" />
 				</div>
             </div>
             <div id="updateTDelete" class="updateDeleteButton">usun</div>
             <div class="updatePageSelectButtons">
-                <div id="updateTConfirm" class="updatePageSelectButton">Confirm</div>
-                <div id="updateTDecline" class="updatePageSelectButton">Decline</div>
+                <div id="updateTConfirm" class="updatePageSelectButton">confirm</div>
+                <div id="updateTDecline" class="updatePageSelectButton">decline</div>
             </div>
         </div>        
     </div>
 
-    <!-- UPDATE S PAGE -->
+    <!-- UPDATE SUBJECT PAGE -->
     <div id="updateSPage">
         <!-- HEADER -->
         <div id="headerUpdateS" class="header">
-            <div class="headerText headerTextUpdate">edit S</div>
+            <div class="headerText headerTextUpdate">edit subject</div>
         </div>
         <!-- MAIN CONTENT-->
         <div id="mainContentUpdateSPage" class="mainContent">
             <div id="updateSOptions">
                 <div class="select">
-					<input type="text" maxlength="3" id="Text1" />
+                    <div class="inputInfo">krotka nazwa</div>
+					<input type="text" maxlength="3" id="subjectShort" />
 				</div>
 				<div class="select">
-					<input type="text" maxlength="30" id="Text2" />
+                    <div class="inputInfo">pelna nazwa</div>
+					<input type="text" maxlength="25" id="subjectLong" />
 				</div>
             </div>
             <div id="updateSDelete" class="updateDeleteButton">usun</div>
             <div class="updatePageSelectButtons">
-                <div id="updateSConfirm" class="updatePageSelectButton">Confirm</div>
-                <div id="updateSDecline" class="updatePageSelectButton">Decline</div>
+                <div id="updateSConfirm" class="updatePageSelectButton">confirm</div>
+                <div id="updateSDecline" class="updatePageSelectButton">decline</div>
             </div>
         </div>        
     </div>

@@ -115,12 +115,14 @@ var curEditDay = 1;
 //czy nasza strona TS pokazuje T czy S
 var showTS = "";
 
-//id edytowanego TS
-var showTSId;
-
 //data
 var d = new Date();
 
+//nazwa do edycji przedmiotu
+var nazwaEdytowanegoTS;
+
+//praktycznie wczytano wszystko
+var initialized = false;
 //==============================================ZMIENNE===================================//
 
 $(document).ready(function () {
@@ -184,37 +186,13 @@ $(document).ready(function () {
 
     }, 60000);
     //==========================================ZARZADZANIE PANELEM STARTOWYM=========================================//
-
-    //ustawianie dzisiejszego dnia
-    function getCurDay() {
-        if (d.getDay() <= 5)
-            curDay = d.getDay();
-        else if (d.getDay() == 0)
-            curDay = 5;
-    }
     
-    //funkcja do testowanie wygladu panelu dzien bez dostepu do bazy danych
-    function refreshDay() {
-        var dayTable = $("#dayTable");
-        var inner = "";
-        for (var a = 0; a < 14; a++) {
-            //var cos = panelDzien[a].nazwaKrotkaPrzedmiotu;
-            //inner += cos;
-            //inner += "<tr class='row'><td class='item1'>" + a + "</td><td class='item2'>" + cos + "</td></tr>"
-            inner += "<tr class='row'><td class='dayItemId'>" + (a+1) + "</td><td id='dayItem_"+((a+1) * 1)+"' class='dayItemContent'>NIC / s.</td></tr>"
-
-            $("#dayItem_" + (a + 1) + "").attr({ "day": 1, "id": (a + 1) });
-            //alert(cos)
-        }
-        dayTable.html(inner);        
-    }
-
     getCurDay();
-    /*
 
-   
-    */
-
+    setTimeout(function () {
+        initialized = true;
+    }, 500)
+ 
     /*############################################################################################
                     ZARZ¥DZANIE WYSUWANYMI PANELAMI... WYSUNIECIE/SCHOWANIE/SWIPELEFT
     ##############################################################################################*/
@@ -312,21 +290,18 @@ $(document).ready(function () {
         updateHoursPage.css("transform", "translateX(0%)");
         hourEditIndex = $(this).parent().index() + 1;
         hourOption = "Od";
-        alert(hourEditIndex)
         return false;
     });
     $("#hoursTable").on("tap", ".hourEnd", function () {
         updateHoursPage.css("transform", "translateX(0%)");
         hourEditIndex = $(this).parent().index() + 1;
         hourOption = "Do";
-        alert(hourEditIndex)
         return false;
     });
     //aktualizowanie godziny
     $("#updatePageSelectButtonHoursConfirm").on("tap", function () {
         if (confirm("Czy chcesz zmienic dane godziny?")) {
             updateHoursPage.css("transform", "translateX(-100%)");
-
             db.transaction(updateHours, onError);
             function updateHours(tx) {
                 tx.executeSql("UPDATE godziny SET godzina" + hourOption + "=" + $('#selectGodzina').val().toString() + ", minuta" + hourOption + "=" + $("#selectMinuty").val().toString() + " WHERE idGodziny='" + hourEditIndex + "';");
@@ -340,10 +315,9 @@ $(document).ready(function () {
         return false;
     });
     //resetowanie godziny
-    $("#updatePageSelectButtonHoursConfirm").on("tap", function () {
+    $("#updatePageDeleteHour").on("tap", function () {
         if (confirm("Czy chcesz usunac edytowana godzine?")) {
             updateHoursPage.css("transform", "translateX(-100%)");
-
             db.transaction(updateDeleteHour, onError);
             function updateDeleteHour(tx) {
                 tx.executeSql("UPDATE godziny SET godzinaOd = '--', minutaOd = '--', godzinaDo = '--', minutaDo = '--' WHERE idGodziny='" + hourEditIndex + "';");
@@ -458,21 +432,22 @@ $(document).ready(function () {
         otherPage.css("transform", "translateX(-100%)");
         return false;
     });
+    showTSPage.on("swipeleft", function () {
+        showTSPage.css("transform", "translateX(-100%)");
+        return false;
+    });
     //wlacz strone do przegladania nauczycieli
     $("#showT").tap(function () {
         showTSPage.css("transform", "translateX(0%)");
-
         showTS = "T";
-        styleTS();
-        //db.transaction(wczytajNauczycieli, onError);
+        db.transaction(wczytajNauczycieli, onError);
         return false;
     });
     //wlacz stronie do przegladania przedmiotow
     $("#showS").tap(function () {
         showTSPage.css("transform", "translateX(0%)");
-        styleTS();
         showTS = "S";
-        //db.transaction(wczytajPrzedmioty, onError);
+        db.transaction(wczytajPrzedmioty, onError);
         return false;
     });
 
@@ -486,95 +461,155 @@ $(document).ready(function () {
         showTSPage.css("transform", "translateX(-100%)");
         return false;
     });
-    //var updateTSPage = $("#updateTPage");
-    $("#showTSDiv").on("tap", ".showTSItem", function () {
-        
-        showTSId = $(this).index() + 1;
+    //strona od edycji nauczyciela
+    var updateTPage = $("#updateTPage");
+    //strona od edycji przedmiotu
+    var updateSPage = $("#updateSPage");
+    $("#showTSDiv").on("tap", ".showTSItem", function () {        
+        nazwaEdytowanegoTS = $(this).text();
         //przedmioty
         if (showTS == "S") {
             $("#updateSPage").css("transform", "translateX(0%)");
         }
-
         if (showTS == "T") {
             $("#updateTPage").css("transform", "translateX(0%)");
-        }
-        
+        }       
     });
-
-    $("#updateTSDecline").tap(function () {
-        updateTSPage.css("transform", "translateX(-100%)");
+    $("#updateTDecline").tap(function () {
+        updateTPage.css("transform", "translateX(-100%)");
         return false;
     });
-
-
-    function editNauczyciel(tx) {
-        tx.executeSql("SELECT nauczyciele.idNauczyciela, nauczyciele.imieNauczyciela, nauczyciele.nazwiskoNauczyciela FROM nauczyciele WHERE nauczyciele.idNauczyciela = " + showTSId + ";", [],
-        function (tx, results) {
-            var inner = "";
-
-            for (var a = 0; a < results.rows.length; a++) {
-                inner += "<div id='tID_" + a + "' class='showTSItem'>" + (results.rows.item(a).imieNauczyciela) + " " + (results.rows.item(a).nazwiskoNauczyciela) + "</div>";
-
+    $("#updateSDecline").tap(function () {
+        updateSPage.css("transform", "translateX(-100%)");
+        return false;
+    });
+    $("#updateTConfirm").tap(function () {
+        if (confirm("Czy chcesz zatwierdzic edycje nauczyciela?")) {
+            updateTPage.css("transform", "translateX(-100%)");
+            db.transaction(aktualizujNauczyciela, onError);            
+            //aktualizacja danych edytowanego nauczyciela
+            function aktualizujNauczyciela(tx) {
+                tx.executeSql("UPDATE nauczyciele SET imieNauczyciela = '" + $("#firstName").val() + "', nazwiskoNauczyciela = '" + $("#secondName").val() + "' WHERE nazwiskoNauczyciela='" + nazwaEdytowanegoTS + "';");
             }
-
-            $("#showTSDiv").html(inner);
-            /*
-            for (var a = 0; a < results.rows.length; a++) {
-                $("#sID_" + a + "").attr("id", (results.rows.item(a).idNauczyciela));
+            db.transaction(wczytajNauczycieli, onError);
+        }
+    });
+    $("#updateSConfirm").tap(function () {
+        if(confirm("Czy chcesz zatwierdzic edycja przedmiotu?")){
+            updateSPage.css("transform", "translateX(-100%)");
+            db.transaction(aktualizujPrzedmiot, onError);
+            //aktualizacja danych edytowanego przedmiotu
+            function aktualizujPrzedmiot(tx) {
+                tx.executeSql("UPDATE przedmioty SET nazwaKrotkaPrzedmiotu = '" + $("#subjectShort").val() + "', nazwaDlugaPrzedmiotu = '" + $("#subjectLong").val() + "' WHERE nazwaDlugaPrzedmiotu='" + nazwaEdytowanegoTS + "';");
             }
-            */
-        }, onError);
-    };
+            db.transaction(wczytajPrzedmioty, onError);
+        }
+    });
+    $("#updateSDelete").tap(function () {
+        if (confirm("Czy na pewno chcesz usunac ten przedmiot?")) {
+            updateSPage.css("transform", "translateX(-100%)");
 
+            db.transaction(getIDPrzedmiotu, onError);
+            var idPrzedmiotu;
+            function getIDPrzedmiotu(tx) {
+                tx.executeSql("SELECT idPrzedmiotu FROM przedmioty WHERE nazwaDlugaPrzedmiotu = '" + nazwaEdytowanegoTS + "';", [],
+                function (tx, results) {
+                    idPrzedmiotu = results.rows.item(0).idPrzedmiotu
+                }, onError);
+            };
+
+            db.transaction(naprawGlownaPrzedmiot, onError);
+            function naprawGlownaPrzedmiot(tx) {
+                tx.executeSql("UPDATE glowna SET kluczObcyPrzedmiotu = 0 WHERE kluczObcyPrzedmiotu=" + idPrzedmiotu + ";");
+            }
+            db.transaction(usunPrzedmiot, onError);
+            //aktualizacja danych edytowanego przedmiotu
+            function usunPrzedmiot(tx) {
+                tx.executeSql("UPDATE przedmioty SET nazwaKrotkaPrzedmiotu = '--', nazwaDlugaPrzedmiotu = '--' WHERE nazwaDlugaPrzedmiotu='" + nazwaEdytowanegoTS + "';");
+            }            
+            db.transaction(wczytajPrzedmioty, onError);
+        }
+    });
+    $("#updateTDelete").tap(function () {
+        if (confirm("Czy na pewno chcesz usunac tego nauczyciela?")) {
+            updateTPage.css("transform", "translateX(-100%)");
+            db.transaction(getIDNauczyciela, onError);
+            var idNauczyciela;
+            function getIDNauczyciela(tx) {
+                tx.executeSql("SELECT idNauczyciela FROM nauczyciele WHERE nazwiskoNauczyciela = '"+nazwaEdytowanegoTS+"';", [],
+                function (tx, results) {
+                    idNauczyciela = results.rows.item(0).idNauczyciela
+                }, onError);
+            };
+
+            db.transaction(naprawGlownaNauczyciel, onError);
+            function naprawGlownaNauczyciel(tx) {
+                tx.executeSql("UPDATE glowna SET kluczObcyNauczyciela = 0 WHERE kluczObcyNauczyciela=" + idNauczyciela + ";");
+            }
+            db.transaction(usunNauczyciela, onError);
+            //aktualizacja danych edytowanego przedmiotu
+            function usunNauczyciela(tx) {
+                tx.executeSql("UPDATE nauczyciele SET imieNauczyciela = '--', nazwiskoNauczyciela = '--' WHERE nazwiskoNauczyciela='" + nazwaEdytowanegoTS + "';");
+            }
+            db.transaction(wczytajNauczycieli, onError);
+        }
+    });
+    //dodaj
+    $("#addTS").tap(function () {
+        //nowy przedmiot
+        if (showTS == "S") {
+            var lastPrzedmiot;
+            db.transaction(getLastPrzedmot, onError);
+            function getLastPrzedmot(tx) {
+                tx.executeSql("SELECT idPrzedmiotu FROM przedmioty;", [],
+                function (tx, results) {
+                    lastPrzedmiot = results.rows.length;
+                }, onError);
+            };
+            db.transaction(addPrzedmiot, onError);
+            function addPrzedmiot(tx) {
+                tx.executeSql("INSERT INTO przedmioty (idPrzedmiotu, nazwaKrotkaPrzedmiotu, nazwaDlugaPrzedmiotu) VALUES (" + lastPrzedmiot + ", 'ABC', 'przedmiot" + lastPrzedmiot + "');");
+            };
+            db.transaction(wczytajPrzedmioty, onError);
+        }
+        //nauczyciela
+        if (showTS == "T") {
+            var lastNauczyciel;
+            db.transaction(getLastNauczyciel, onError);
+            function getLastNauczyciel(tx) {
+                tx.executeSql("SELECT idNauczyciela FROM nauczyciele;", [],
+                function (tx, results) {
+                    lastNauczyciel = results.rows.length;
+                }, onError);
+            };
+            db.transaction(addNauczyciela, onError);
+            function addNauczyciela(tx) {
+                tx.executeSql("INSERT INTO nauczyciele (idNauczyciela, imieNauczyciela, nazwiskoNauczyciela) VALUES (" + lastNauczyciel + ", 'Jan', 'Kowalki" + lastNauczyciel + "');");
+            };
+            db.transaction(wczytajNauczycieli, onError);
+        }
+    });
     //pobranie przedmiotow do edycji przedmiotow
     function wczytajPrzedmioty(tx) {
-        tx.executeSql("SELECT przedmioty.idPrzedmiotu, przedmioty.nazwaDlugaPrzedmiotu FROM przedmioty WHERE przedmioty.idPrzedmiotu > 0;", [],
+        tx.executeSql("SELECT przedmioty.idPrzedmiotu, przedmioty.nazwaDlugaPrzedmiotu FROM przedmioty WHERE przedmioty.idPrzedmiotu > 0 AND przedmioty.nazwaKrotkaPrzedmiotu != '--';", [],
         function (tx, results) {
             var inner = "";
             for (var a = 0; a < results.rows.length; a++) {
                 inner += "<div class='showTSItem'>" + (results.rows.item(a).nazwaDlugaPrzedmiotu) + "</div>";
-
             }
             $("#showTSDiv").html(inner);
-
-            /*
-            for (var a = 0; a < results.rows.length; a++) {
-                $("#sID_" + a + "").attr("id", (results.rows.item(a).idPrzedmiotu));
-            }
-            */
         }, onError);
     };
-
-    
-    function styleTS() {
-        var inner = "";
-
-        for (var a = 0; a < 3; a++) {
-            inner += "<div class='showTSItem'>Imie Nazwisko</div>";
-
-        }
-
-        $("#showTSDiv").html(inner);
-    }
-    
-
     //pobranie nauczycieli do edycji nauczycieli
     function wczytajNauczycieli(tx) {
-        tx.executeSql("SELECT nauczyciele.idNauczyciela, nauczyciele.imieNauczyciela, nauczyciele.nazwiskoNauczyciela FROM nauczyciele WHERE nauczyciele.idNauczyciela > 0;", [],
+        tx.executeSql("SELECT nauczyciele.idNauczyciela, nauczyciele.imieNauczyciela, nauczyciele.nazwiskoNauczyciela FROM nauczyciele WHERE nauczyciele.idNauczyciela > 0 AND nauczyciele.imieNauczyciela != '--';", [],
         function (tx, results) {
             var inner = "";
 
             for (var a = 0; a < results.rows.length; a++) {
-                inner += "<div id='tID_" + a + "' class='showTSItem'>" + (results.rows.item(a).imieNauczyciela) + " " + (results.rows.item(a).nazwiskoNauczyciela) + "</div>";
-
+                inner += "<div class='showTSItem'>" + (results.rows.item(a).nazwiskoNauczyciela) + "</div>";
             }
-
             $("#showTSDiv").html(inner);
-            /*
-            for (var a = 0; a < results.rows.length; a++) {
-                $("#sID_" + a + "").attr("id", (results.rows.item(a).idNauczyciela));
-            }
-            */
         }, onError);
     };
     //==========================================OTHER=========================================//
@@ -774,31 +809,19 @@ $(document).ready(function () {
     };
     //panel godziny
     function pobierzGodziny(tx) {
-        tx.executeSql("SELECT * FROM godziny", [],
+        tx.executeSql("SELECT * FROM godziny;", [],
         function (tx, results) {
-            var inner = "";            
-            for (var a = 0; a < results.rows.length; a++) {
-                var poczatekMin = "";
-                var koniecMin = "";
-                //zadbanie o poprawne wyswietlanie minut
-                if (results.rows.item(a).minutaOd < 10) {
-                    poczatekMin = '0' + results.rows.item(a).minutaOd;
-                } else {
-                    poczatekMin = results.rows.item(a).minutaOd;
-                }
-                if (results.rows.item(a).minutaDo < 10) {
-                    koniecMin = '0' + results.rows.item(a).minutaDo;
-                } else {
-                    koniecMin = results.rows.item(n).minutaDo;
-                }
-                inner += ("<tr class='hourRow'><td class='hourIndex'>" + (results.rows.item(a).idGodziny) + "</td><td class='hourBegin'>" + results.rows.item(a).godzinaOd + ":" + poczatekMin + "</td><td class='hourEnd'>" + results.rows.item(a).godzinaDo + ":" + koniecMin + "</td></tr>");
+            var inner = "";
+            alert(results.rows.length)
+            for (var a = 0; a < results.rows.length; a++) {                
+                inner += ("<tr class='hourRow'><td class='hourIndex'>" + (results.rows.item(a).idGodziny) + "</td><td class='hourBegin'>" + results.rows.item(a).godzinaOd + ":" + (results.rows.item(a).minutaOd) + "</td><td class='hourEnd'>" + results.rows.item(a).godzinaDo + ":" + (results.rows.item(a).minutaDo) + "</td></tr>");
             }
             $("#hoursTable").html(inner);
         }, onError);
     };
     //pobranie przedmiotow do edycji lekcji
     function pobierzPrzedmioty(tx) {
-        tx.executeSql("SELECT przedmioty.idPrzedmiotu, przedmioty.nazwaDlugaPrzedmiotu FROM przedmioty WHERE przedmioty.idPrzedmiotu > 0;", [],
+        tx.executeSql("SELECT przedmioty.idPrzedmiotu, przedmioty.nazwaDlugaPrzedmiotu FROM przedmioty WHERE przedmioty.idPrzedmiotu > 0 AND przedmioty.nazwaKrotkaPrzedmiotu != '--';", [],
         function (tx, results) {
             var options = "";
             for (var a = 0; a < results.rows.length; a++) {
@@ -809,7 +832,7 @@ $(document).ready(function () {
     };
     //pobranie nauczycieli do edycji lekcji
     function pobierzNauczycieli(tx) {
-        tx.executeSql("SELECT nauczyciele.idNauczyciela, nauczyciele.imieNauczyciela, nauczyciele.nazwiskoNauczyciela FROM nauczyciele WHERE nauczyciele.idNauczyciela > 0;", [],
+        tx.executeSql("SELECT nauczyciele.idNauczyciela, nauczyciele.imieNauczyciela, nauczyciele.nazwiskoNauczyciela FROM nauczyciele WHERE nauczyciele.idNauczyciela > 0 AND nauczyciele.imieNauczyciela != '--';", [],
         function (tx, results) {
             var options = "";
             for (var a = 0; a < results.rows.length; a++) {
@@ -831,7 +854,13 @@ $(document).ready(function () {
         }, onError);
     };
 
-    
+    //ustawianie dzisiejszego dnia
+    function getCurDay() {
+        if (d.getDay() <= 5)
+            curDay = d.getDay();
+        else if (d.getDay() == 0)
+            curDay = 5;
+    }
 
     /*
     //file manager WIP
